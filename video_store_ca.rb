@@ -56,21 +56,43 @@ class ViewStatement
 end
 
 class InMemoryRentalGateway
-  def initialize
+  def initialize(rental_factory:)
+    @rental_factory = rental_factory
     @rentals = []
   end
 
   def save(rental)
-    @rentals << rental
+    @rentals << {
+      type: to_string_type(rental),
+      days: rental.days,
+      name: rental.name
+    }
   end
 
   def all
-    @rentals
+    @rentals.map do |rental|
+      @rental_factory.make(
+        rental[:type],
+        name: rental[:name],
+        days: rental[:days]
+      )
+    end
+  end
+
+  private
+
+  def to_string_type(rental)
+    case (rental)
+    when NewReleaseMovie
+      'new-release'
+    when ChildrensMovie
+      'childrens'
+    end
   end
 end
 
 rental_factory = RentalFactory.new
-rental_gateway = InMemoryRentalGateway.new
+rental_gateway = InMemoryRentalGateway.new(rental_factory: rental_factory)
 create_rental = CreateRental.new(rental_gateway: rental_gateway, rental_factory: rental_factory)
 view_statement = ViewStatement.new(rental_gateway: rental_gateway)
 statement = StatementPrinter.new(view_statement: view_statement)

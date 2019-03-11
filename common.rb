@@ -1,17 +1,13 @@
 class Movie
-  attr_reader :name
+  attr_reader :name, :days
 
-  def initialize(name)
+  def initialize(name:, days:)
     @name = name
+    @days = days
   end
 end
 
 class ChildrensMovie < Movie
-  def initialize(name:, days:)
-    super(name)
-    @days = days
-  end
-
   def price
     return 1.5 if @days < 4
     1.5 + (@days * 1.5)
@@ -23,11 +19,6 @@ class ChildrensMovie < Movie
 end
 
 class NewReleaseMovie < Movie
-  def initialize(name:, days:)
-    super(name)
-    @days = days
-  end
-
   def price
     3 * @days
   end
