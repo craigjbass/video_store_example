@@ -1,65 +1,36 @@
+require_relative 'common'
+
 class StatementPrinter
   def initialize(rental_factory:)
     @rental_factory = rental_factory
-    @rental = []
+    @rentals = []
   end
 
   def add_rental(type, request)
-   @rental << @rental_factory.make(type, request)
+    @rentals << @rental_factory.make(type, request)
   end
 
   def print
-    "Statement for customer\n" +
-      "  #{@rental.first.name} #{@rental.first.price}\n" +
-    "You owe #{@rental.first.price}\n" +
-    "You earned #{@rental.first.points} points\n"
-  end
-end
+    output = "Statement for customer\n"
+    total = 0
+    points = 0
 
-class Movie
-  attr_reader :name
+    @rentals.each do |rental|
+      total += rental.price
+      points += rental.points
+      output << "  #{rental.name} #{rental.price}\n"
+    end
 
-  def initialize(name)
-    @name = name
-  end
-end
-
-class ChildrensMovie < Movie
-  def initialize(name:, days:)
-    super(name)
-    @days = days
-  end
-
-  def price
-    1.5
-  end
-
-  def points
-    1
-  end
-end
-
-class RentalFactory
-  def initialize
-    @things = {}
-  end
-
-  def make(type, request)
-    callable = @things[type]
-    callable.call(request)
-  end
-
-  def register(type, &block)
-    @things[type] = block
+    output << "You owe #{total}\n"
+    output << "You earned #{points} points\n"
+    output
   end
 end
 
 rental_factory = RentalFactory.new
-rental_factory.register('childrens') do |request|
-  ChildrensMovie.new(request)
-end
 
 statement = StatementPrinter.new(rental_factory: rental_factory)
 statement.add_rental('childrens', { name: 'Bugs Life', days: 3 })
+statement.add_rental('new-release', { name: '2 Fast 50 ', days: 3 })
 
 puts statement.print
