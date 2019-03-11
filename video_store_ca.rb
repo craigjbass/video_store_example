@@ -1,10 +1,10 @@
 class StatementPrinter
-  def initialize(view_rental:)
-    @view_rental = view_rental
+  def initialize(view_statement:)
+    @view_statement = view_statement
   end
 
   def print
-    response = @view_rental.execute({})
+    response = @view_statement.execute({})
 
     output = "Statement for customer\n"
 
@@ -68,11 +68,28 @@ class ChildrensMovie < Movie
   end
 
   def price
-    1*@days
+    return 1.5 if @days < 4
+    1.5 + (@days * 1.5)
   end
 
   def points
-    @days /2
+    1
+  end
+end
+
+class NewReleaseMovie < Movie
+  def initialize(name:, days:)
+    super(name)
+    @days = days
+  end
+
+  def price
+    3 * @days
+  end
+
+  def points
+    return 1 if @days == 1
+    2
   end
 end
 
@@ -82,8 +99,12 @@ class RentalFactory
   end
 
   def make(type, request)
-    callable = @things[type]
-    callable.call(request)
+    case (type)
+    when 'childrens'
+      ChildrensMovie.new(request)
+    when 'new-release'
+      NewReleaseMovie.new(request)
+    end
   end
 
   def register(type, &block)
@@ -106,18 +127,13 @@ class InMemoryRentalGateway
 end
 
 rental_factory = RentalFactory.new
-rental_factory.register('childrens') do |request|
-  ChildrensMovie.new(request)
-end
-
 rental_gateway = InMemoryRentalGateway.new
 create_rental = CreateRental.new(rental_gateway: rental_gateway, rental_factory: rental_factory)
-create_rental.execute(type: 'childrens', name: 'Bugs Life', days: 4)
-create_rental.execute(type: 'childrens', name: 'Bugs Life', days: 4)
-create_rental.execute(type: 'childrens', name: 'Bugs Life', days: 4)
+view_statement = ViewStatement.new(rental_gateway: rental_gateway)
+statement = StatementPrinter.new(view_statement: view_statement)
 
-view_rental = ViewStatement.new(rental_gateway: rental_gateway)
-
-statement = StatementPrinter.new(view_rental: view_rental)
+create_rental.execute(type: 'childrens', name: 'Bugs Life', days: 4)
+create_rental.execute(type: 'childrens', name: 'Bugs Life', days: 4)
+create_rental.execute(type: 'new-release', name: '2 Fast 50', days: 4)
 puts statement.print
 
