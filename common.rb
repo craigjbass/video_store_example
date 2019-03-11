@@ -38,4 +38,13 @@ class RentalFactory
       NewReleaseMovie.new(request)
     end
   end
+
+  def to_type(rental)
+    case (rental)
+    when NewReleaseMovie
+      'new-release'
+    when ChildrensMovie
+      'childrens'
+    end
+  end
 end

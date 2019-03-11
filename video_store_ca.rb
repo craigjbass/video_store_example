@@ -63,7 +63,7 @@ class InMemoryRentalGateway
 
   def save(rental)
     @rentals << {
-      type: to_string_type(rental),
+      type: @rental_factory.to_type(rental),
       days: rental.days,
       name: rental.name
     }
@@ -76,17 +76,6 @@ class InMemoryRentalGateway
         name: rental[:name],
         days: rental[:days]
       )
-    end
-  end
-
-  private
-
-  def to_string_type(rental)
-    case (rental)
-    when NewReleaseMovie
-      'new-release'
-    when ChildrensMovie
-      'childrens'
     end
   end
 end
